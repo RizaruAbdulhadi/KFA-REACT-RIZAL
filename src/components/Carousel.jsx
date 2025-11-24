@@ -1,6 +1,6 @@
 // import "../index.css";
-import carContent from "../assets/images/car1.JPEG";
-import carContent2 from "../assets/images/car2.JPEG";
+import carContent from "../assets/images/car1.jpeg";
+import carContent2 from "../assets/images/car2.jpeg";
 
 function Carousel() {
   return (
