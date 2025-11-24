@@ -13,3 +13,9 @@
 section {
   margin-top: 20px;
 }
+
+.carousel-item img {
+  height: 600px;
+  width: 100%;
+  object-fit: cover;
+}

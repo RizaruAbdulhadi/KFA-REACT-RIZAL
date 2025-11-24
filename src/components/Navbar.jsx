@@ -4,8 +4,8 @@ import "../index.css";
 function Navbar() {
   return (
     <>
-      <nav className="navbar navbar-expand-lg bg-body-light shadow p-3 mb-5 bg-body-tertiary rounded">
-        <div className="container">
+      <nav className="navbar navbar-expand-lg bg-body-light shadow p-3 mb-2 bg-body-tertiary rounded">
+        <div className="container-fluid">
           <a className="navbar-brand" href="#">
             <img
               src={logo}
@@ -30,22 +30,47 @@ function Navbar() {
             <ul className="navbar-nav mx-auto">
               <li className="nav-item">
                 <a className="nav-link active" aria-current="page" href="#">
-                  Home
+                  BERANDA
                 </a>
               </li>
               <li className="nav-item">
                 <a className="nav-link" href="#">
-                  Features
+                  TENTNG KAMI
                 </a>
               </li>
               <li className="nav-item">
                 <a className="nav-link" href="#">
-                  Pricing
+                  PRODUK & LAYANAN
                 </a>
               </li>
               <li className="nav-item">
                 <a className="nav-link disabled" aria-disabled="true">
-                  Disabled
+                  OUTLET
+                </a>
+              </li>
+              <li className="nav-item">
+                <a className="nav-link disabled" aria-disabled="true">
+                  KEBERLANJUTAN
+                </a>
+              </li>
+              <li className="nav-item">
+                <a className="nav-link disabled" aria-disabled="true">
+                  BERITA
+                </a>
+              </li>
+              <li className="nav-item">
+                <a className="nav-link disabled" aria-disabled="true">
+                  KARIR
+                </a>
+              </li>
+              <li className="nav-item">
+                <a className="nav-link disabled" aria-disabled="true">
+                  KONTAK
+                </a>
+              </li>
+              <li className="nav-item">
+                <a className="nav-link disabled" aria-disabled="true">
+                  ID
                 </a>
               </li>
             </ul>
