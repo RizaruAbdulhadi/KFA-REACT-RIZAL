@@ -1,7 +1,9 @@
 import logo from "../assets/images/kf.png";
 import "../index.css";
+import { useNavigate } from "react-router-dom";
 
 function Navbar() {
+  const navigate = useNavigate();
   return (
     <>
       <nav className="navbar navbar-expand-lg bg-body-light shadow p-3 mb-2 bg-body-tertiary rounded">
@@ -81,6 +83,7 @@ function Navbar() {
                 color: "white",
               }}
               type="button"
+              onClick={() => navigate("/login")}
             >
               Login
             </button>
