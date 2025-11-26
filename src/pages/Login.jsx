@@ -40,7 +40,7 @@ function Login() {
         password: formData.password,
       });
 
-      navigate("/dashboard");
+      navigate("/admin");
     } catch (err) {
       setError(err.message || "Email atau Password salah");
     } finally {

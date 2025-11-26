@@ -4,6 +4,10 @@ import { Routes, Route } from "react-router-dom";
 import Home from "./pages/Home.jsx";
 import Login from "./pages/Login.jsx";
 import Register from "./pages/Register.jsx";
+import Dashboard from "./pages/Dashboard.jsx";
+import ProtectedRoute from "./components/ProtectedRoute.jsx";
+import AdminLayout from "./layouts/AdminLayout.jsx";
+import Users from "./components/admin/Users.jsx";
 
 function App() {
   return (
@@ -18,22 +22,22 @@ function App() {
 
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
-          {/* <Route path="/dashboard" element={<Dashboard /
-            
-          >} /> */}
 
-          {/* <Route
-            path="/dashboard"
+          <Route
+            path="/admin"
             element={
               <ProtectedRoute>
-                <DashboardLayout />
+                <AdminLayout />
               </ProtectedRoute>
             }
-          > */}
-          {/* <Route index element={<Dashboard />} /> */}
-          {/* <Route path="users" element={<Users />} />
+          >
+            <Route index element={<Dashboard />} />
+            <Route path="dashboard" element={<Dashboard />} />
+            <Route path="users" element={<Users />} />
+            {/* <Route index element={<Dashboard />} /> */}
+            {/* <Route path="users" element={<Users />} />
             <Route path="product" element={<DashboardProduct />} /> */}
-          {/* </Route> */}
+          </Route>
         </Routes>
       </div>
     </>

@@ -25,7 +25,7 @@ const authService = {
       console.error("Logout failed", error);
     } finally {
       localStorage.removeItem("token");
-      localStorage.remoteItem("user");
+      localStorage.removeItem("user");
     }
   },
 
