@@ -14,20 +14,37 @@ function Pegawai() {
   const [pagination, setPagination] = useState({
     page: 1,
     totalPages: 1,
-    total: 0,
+    total: 5,
     limit: 10,
     hasNextPage: false,
     hasPrevPage: false,
   });
   const [search, setSearch] = useState("");
   const [formData, setFormData] = useState({
+    nip: "",
     nama: "",
+    user: {
+      username: "",
+      role: "user",
+      isActive: true,
+    },
+    jenisKelamin: "",
+    tempatLahir: "",
+    tanggalLahir: "",
+    alamat: "",
+    noTelp: "",
     email: "",
-    role: "",
-    fullName: "",
-    role: "user",
-    isActive: true,
+    jabatan: {
+      id: null,
+      nama: "",
+    },
+    unitKerja: {
+      id: null,
+      nama: "",
+    },
+    status: "aktif",
   });
+
   const [formLoading, setFormLoading] = useState(false);
   const [formError, setFormError] = useState(null);
 
@@ -68,12 +85,29 @@ function Pegawai() {
     setModalMode("add");
     setSelectedPegawai(null);
     setFormData({
-      username: "",
+      nip: "",
+      nama: "",
+      user: {
+        username: "",
+        role: "user",
+        isActive: true,
+      },
+      jenisKelamin: "",
+      tempatLahir: "",
+      tanggalLahir: "",
+      alamat: "",
+      noTelp: "",
       email: "",
+      jabatan: {
+        id: null,
+        nama: "",
+      },
+      unitKerja: {
+        id: null,
+        nama: "",
+      },
+      status: "aktif",
       password: "",
-      fullName: "",
-      role: "user",
-      isActive: true,
     });
     setFormError(null);
     setShowModal(true);
@@ -88,10 +122,22 @@ function Pegawai() {
   //Handler input Form
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: type === "checkbox" ? checked : value,
-    }));
+
+    if (name.includes(".")) {
+      const [parent, child] = name.split(".");
+      setFormData((prev) => ({
+        ...prev,
+        [parent]: {
+          ...prev[parent],
+          [child]: type === "checkbox" ? checked : value,
+        },
+      }));
+    } else {
+      setFormData((prev) => ({
+        ...prev,
+        [name]: type === "checkbox" ? checked : value,
+      }));
+    }
   };
 
   const handleSubmit = async () => {
@@ -99,35 +145,34 @@ function Pegawai() {
       setFormLoading(true);
       setFormError(null);
 
+      const payload = {
+        nip: formData.nip,
+        nama: formData.nama,
+        jenisKelamin: formData.jenisKelamin,
+        tempatLahir: formData.tempatLahir,
+        tanggalLahir: formData.tanggalLahir,
+        alamat: formData.alamat,
+        noTelp: formData.noTelp,
+        email: formData.email,
+        status: formData.status,
+        tanggalMasuk: formData.tanggalMasuk,
+        userId: formData.user.id, // untuk edit
+        username: formData.user.username,
+        role: formData.user.role,
+        isActive: formData.user.isActive,
+        password: formData.password || undefined, // hanya dikirim jika ada
+        jabatanId: formData.jabatan.id,
+        unitKerjaId: formData.unitKerja.id,
+      };
+
       if (modalMode === "add") {
-        // Validasi untuk tambah
-        if (!formData.username || !formData.email || !formData.password) {
-          setFormError("Username, email, dan password wajib diisi");
-          return;
-        }
-        await pegawaiServices.create(formData);
+        await pegawaiServices.create(payload);
       } else {
-        // Mode edit
-        // Validasi untuk edit
-        if (!formData.username || !formData.email) {
-          setFormError("Username dan email wajib diisi");
-          return;
-        }
-
-        // Siapkan data untuk update
-        const updateData = { ...formData };
-
-        // Hapus password jika kosong (tidak ingin diubah)
-        if (!updateData.password) {
-          delete updateData.password;
-        }
-
-        await pegawaiServices.update(selectedPegawai.id, updateData);
+        await pegawaiServices.update(selectedPegawai.id, payload);
       }
 
-      // Tutup modal dan refresh data
       handleCloseModal();
-      fetchUsers(pagination.page, search); // Tetap di halaman yang sama
+      fetchUsers(pagination.page, search);
     } catch (err) {
       setFormError(err.message || "Gagal menyimpan data");
     } finally {
@@ -139,14 +184,32 @@ function Pegawai() {
     setModalMode("edit");
     setSelectedPegawai(user);
     setFormData({
-      username: user.user.username,
-      email: user.email,
-      password: "", // Kosong, diisi jika ingin ganti password
-      fullName: user.nama || "",
-      role: user.role,
-      isActive: user.isActive,
+      nip: user.nip || "",
+      nama: user.nama || "",
+      jenisKelamin: user.jenisKelamin || "",
+      tempatLahir: user.tempatLahir || "",
+      tanggalLahir: user.tanggalLahir || "",
+      alamat: user.alamat || "",
+      noTelp: user.noTelp || "",
+      email: user.email || "",
+      tanggalMasuk: user.tanggalMasuk || "",
+      user: {
+        id: user.user?.id || null,
+        username: user.user?.username || "",
+        role: user.user?.role || "user",
+        isActive: user.user?.isActive ?? true,
+      },
+      jabatan: {
+        id: user.jabatan?.id || null,
+        nama: user.jabatan?.nama || "",
+      },
+      unitKerja: {
+        id: user.unitKerja?.id || null,
+        nama: user.unitKerja?.nama || "",
+      },
+      status: user.status || "aktif",
+      password: "", // Kosongkan, hanya diisi jika mau diubah
     });
-    setFormError(null);
     setShowModal(true);
   };
 
@@ -211,7 +274,7 @@ function Pegawai() {
 
           <button className="btn btn-primary" onClick={handleAdd}>
             <i className="bi bi-plus-lg me-2"></i>
-            Tambah User
+            Tambah Pegawai
           </button>
         </form>
       </div>
@@ -232,10 +295,9 @@ function Pegawai() {
                 <thead className="table-light">
                   <tr>
                     <th>No</th>
-                    <th>Username</th>
-                    <th>Email</th>
-                    <th>Nama Lengkap</th>
-                    <th>Role</th>
+                    <th>NIP</th>
+                    <th>Nama</th>
+                    <th>Unit Kerja</th>
                     <th>Status</th>
                     <th>Action</th>
                   </tr>
@@ -253,27 +315,16 @@ function Pegawai() {
                         <td>
                           {(pagination.page - 1) * pagination.limit + index + 1}
                         </td>
-                        <td>{user.username}</td>
-                        <td>{user.email}</td>
-                        <td>{user.fullName || "-"}</td>
+                        <td>{user.nip}</td>
+                        <td>{user.nama}</td>
+                        <td>{user.unitKerja.nama}</td>
                         <td>
                           <span
                             className={`badge ${
-                              user.role === "admin"
-                                ? "bg-danger"
-                                : "bg-secondary"
+                              user.status ? "bg-success" : "bg-warning"
                             }`}
                           >
-                            {user.role}
-                          </span>
-                        </td>
-                        <td>
-                          <span
-                            className={`badge ${
-                              user.isActive ? "bg-success" : "bg-warning"
-                            }`}
-                          >
-                            {user.isActive ? "Active" : "Inactive"}
+                            {user.status ? "Active" : "Inactive"}
                           </span>
                         </td>
                         <td>
@@ -362,11 +413,11 @@ function Pegawai() {
           tabIndex="-1"
           style={{ backgroundColor: "rgba(0,0,0,0.5)" }}
         >
-          <div className="modal-dialog">
+          <div className="modal-dialog modal-lg">
             <div className="modal-content">
               <div className="modal-header">
                 <h5 className="modal-title">
-                  {modalMode === "add" ? "Tambah User" : "Edit User"}
+                  {modalMode === "add" ? "Tambah Pegawai" : "Edit Pegawai"}
                 </h5>
                 <button
                   type="button"
@@ -383,113 +434,266 @@ function Pegawai() {
                   </div>
                 )}
 
-                {/* Username */}
-                <div className="mb-3">
-                  <label htmlFor="username" className="form-label">
-                    Username <span className="text-danger">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    className="form-control"
-                    id="username"
-                    name="username"
-                    value={formData.username}
-                    onChange={handleInputChange}
-                    placeholder="Masukkan username"
-                    required
-                  />
-                </div>
-
-                {/* Email */}
-                <div className="mb-3">
-                  <label htmlFor="email" className="form-label">
-                    Email <span className="text-danger">*</span>
-                  </label>
-                  <input
-                    type="email"
-                    className="form-control"
-                    id="email"
-                    name="email"
-                    value={formData.email}
-                    onChange={handleInputChange}
-                    placeholder="Masukkan email"
-                    required
-                  />
-                </div>
-
-                {/* Password */}
-                <div className="mb-3">
-                  <label htmlFor="password" className="form-label">
-                    Password{" "}
-                    {modalMode === "add" && (
-                      <span className="text-danger">*</span>
-                    )}
-                  </label>
-                  <input
-                    type="password"
-                    className="form-control"
-                    id="password"
-                    name="password"
-                    value={formData.password}
-                    onChange={handleInputChange}
-                    placeholder={
-                      modalMode === "edit"
-                        ? "Kosongkan jika tidak diubah"
-                        : "Masukkan password"
-                    }
-                  />
-                </div>
-
-                {/* Full Name */}
-                <div className="mb-3">
-                  <label htmlFor="fullName" className="form-label">
-                    Nama Lengkap
-                  </label>
-                  <input
-                    type="text"
-                    className="form-control"
-                    id="fullName"
-                    name="fullName"
-                    value={formData.fullName}
-                    onChange={handleInputChange}
-                    placeholder="Masukkan nama lengkap"
-                  />
-                </div>
-
-                {/* Role */}
-                <div className="mb-3">
-                  <label htmlFor="role" className="form-label">
-                    Role
-                  </label>
-                  <select
-                    className="form-select"
-                    id="role"
-                    name="role"
-                    value={formData.role}
-                    onChange={handleInputChange}
-                  >
-                    <option value="user">User</option>
-                    <option value="admin">Admin</option>
-                  </select>
-                </div>
-
-                {/* Status */}
-                <div className="mb-3">
-                  <div className="form-check">
+                <div className="row">
+                  {/* NIP */}
+                  <div className="col-md-6 mb-3">
+                    <label htmlFor="nip" className="form-label">
+                      NIP
+                    </label>
                     <input
-                      type="checkbox"
-                      className="form-check-input"
-                      id="isActive"
-                      name="isActive"
-                      checked={formData.isActive}
+                      type="text"
+                      className="form-control"
+                      id="nip"
+                      name="nip"
+                      value={formData.nip}
                       onChange={handleInputChange}
                     />
-                    <label className="form-check-label" htmlFor="isActive">
-                      Aktif
+                  </div>
+
+                  {/* Nama Lengkap */}
+                  <div className="col-md-6 mb-3">
+                    <label htmlFor="nama" className="form-label">
+                      Nama Lengkap
                     </label>
+                    <input
+                      type="text"
+                      className="form-control"
+                      id="nama"
+                      name="nama"
+                      value={formData.nama}
+                      onChange={handleInputChange}
+                    />
+                  </div>
+
+                  {/* Username */}
+                  <div className="col-md-6 mb-3">
+                    <label htmlFor="username" className="form-label">
+                      Username
+                    </label>
+                    <input
+                      type="text"
+                      className="form-control"
+                      id="username"
+                      name="user.username"
+                      value={formData.user.username}
+                      onChange={handleInputChange}
+                    />
+                  </div>
+
+                  {/* Email */}
+                  <div className="col-md-6 mb-3">
+                    <label htmlFor="email" className="form-label">
+                      Email
+                    </label>
+                    <input
+                      type="email"
+                      className="form-control"
+                      id="email"
+                      name="email"
+                      value={formData.email}
+                      onChange={handleInputChange}
+                    />
+                  </div>
+
+                  {/* Password */}
+                  <div className="col-md-6 mb-3">
+                    <label htmlFor="password" className="form-label">
+                      Password
+                      {modalMode === "add" && (
+                        <span className="text-danger">*</span>
+                      )}
+                    </label>
+                    <input
+                      type="password"
+                      className="form-control"
+                      id="password"
+                      name="password"
+                      value={formData.password || ""}
+                      onChange={handleInputChange}
+                      placeholder={
+                        modalMode === "edit"
+                          ? "Kosongkan jika tidak diubah"
+                          : "Masukkan password"
+                      }
+                    />
+                  </div>
+
+                  {/* Role */}
+                  <div className="col-md-6 mb-3">
+                    <label htmlFor="role" className="form-label">
+                      Role
+                    </label>
+                    <select
+                      className="form-select"
+                      id="role"
+                      name="user.role"
+                      value={formData.user.role}
+                      onChange={handleInputChange}
+                    >
+                      <option value="user">User</option>
+                      <option value="admin">Admin</option>
+                    </select>
+                  </div>
+
+                  {/* Status */}
+                  <div className="col-md-6 mb-3 d-flex align-items-center">
+                    <div className="form-check">
+                      <input
+                        type="checkbox"
+                        className="form-check-input"
+                        id="isActive"
+                        name="user.isActive"
+                        checked={formData.user.isActive}
+                        onChange={handleInputChange}
+                      />
+                      <label className="form-check-label" htmlFor="isActive">
+                        Aktif
+                      </label>
+                    </div>
+                  </div>
+
+                  {/* Jenis Kelamin */}
+                  <div className="col-md-6 mb-3">
+                    <label htmlFor="jenisKelamin" className="form-label">
+                      Jenis Kelamin
+                    </label>
+                    <select
+                      className="form-select"
+                      id="jenisKelamin"
+                      name="jenisKelamin"
+                      value={formData.jenisKelamin}
+                      onChange={handleInputChange}
+                    >
+                      <option value="">Pilih</option>
+                      <option value="L">Laki-laki</option>
+                      <option value="P">Perempuan</option>
+                    </select>
+                  </div>
+
+                  {/* Tempat Lahir */}
+                  <div className="col-md-6 mb-3">
+                    <label htmlFor="tempatLahir" className="form-label">
+                      Tempat Lahir
+                    </label>
+                    <input
+                      type="text"
+                      className="form-control"
+                      id="tempatLahir"
+                      name="tempatLahir"
+                      value={formData.tempatLahir}
+                      onChange={handleInputChange}
+                    />
+                  </div>
+
+                  {/* Tanggal Lahir */}
+                  <div className="col-md-6 mb-3">
+                    <label htmlFor="tanggalLahir" className="form-label">
+                      Tanggal Lahir
+                    </label>
+                    <input
+                      type="date"
+                      className="form-control"
+                      id="tanggalLahir"
+                      name="tanggalLahir"
+                      value={formData.tanggalLahir}
+                      onChange={handleInputChange}
+                    />
+                  </div>
+
+                  {/* No Telp */}
+                  <div className="col-md-6 mb-3">
+                    <label htmlFor="noTelp" className="form-label">
+                      No. Telp
+                    </label>
+                    <input
+                      type="text"
+                      className="form-control"
+                      id="noTelp"
+                      name="noTelp"
+                      value={formData.noTelp}
+                      onChange={handleInputChange}
+                    />
+                  </div>
+
+                  {/* Alamat */}
+                  <div className="col-md-12 mb-3">
+                    <label htmlFor="alamat" className="form-label">
+                      Alamat
+                    </label>
+                    <textarea
+                      className="form-control"
+                      id="alamat"
+                      name="alamat"
+                      rows="2"
+                      value={formData.alamat}
+                      onChange={handleInputChange}
+                    ></textarea>
+                  </div>
+
+                  {/* Jabatan */}
+                  <div className="col-md-6 mb-3">
+                    <label htmlFor="jabatan" className="form-label">
+                      Jabatan
+                    </label>
+                    <input
+                      type="text"
+                      className="form-control"
+                      id="jabatan"
+                      name="jabatan.nama"
+                      value={formData.jabatan.nama}
+                      onChange={handleInputChange}
+                    />
+                  </div>
+
+                  {/* Unit Kerja */}
+                  <div className="col-md-6 mb-3">
+                    <label htmlFor="unitKerja" className="form-label">
+                      Unit Kerja
+                    </label>
+                    <input
+                      type="text"
+                      className="form-control"
+                      id="unitKerja"
+                      name="unitKerja.nama"
+                      value={formData.unitKerja.nama}
+                      onChange={handleInputChange}
+                    />
+                  </div>
+
+                  {/* Status Pegawai */}
+                  <div className="col-md-6 mb-3">
+                    <label htmlFor="status" className="form-label">
+                      Status Pegawai
+                    </label>
+                    <select
+                      className="form-select"
+                      id="status"
+                      name="status"
+                      value={formData.status}
+                      onChange={handleInputChange}
+                    >
+                      <option value="aktif">Aktif</option>
+                      <option value="nonaktif">Nonaktif</option>
+                    </select>
+                  </div>
+
+                  {/* Tanggal Masuk */}
+                  <div className="col-md-6 mb-3">
+                    <label htmlFor="tanggalMasuk" className="form-label">
+                      Tanggal Masuk
+                    </label>
+                    <input
+                      type="date"
+                      className="form-control"
+                      id="tanggalMasuk"
+                      name="tanggalMasuk"
+                      value={formData.tanggalMasuk}
+                      onChange={handleInputChange}
+                    />
                   </div>
                 </div>
               </div>
+
               <div className="modal-footer">
                 <button
                   type="button"
